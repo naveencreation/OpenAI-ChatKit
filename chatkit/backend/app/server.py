@@ -4,27 +4,34 @@ from __future__ import annotations
 
 from typing import Any, AsyncIterator
 
-from agents import Runner
+from agents import Agent, FileSearchTool, Runner
 from chatkit.agents import AgentContext, simple_to_agent_input, stream_agent_response
 from chatkit.server import ChatKitServer
 from chatkit.types import ThreadMetadata, ThreadStreamEvent, UserMessageItem
 
 from .memory_store import MemoryStore
-from agents import Agent
 
 
 MAX_RECENT_ITEMS = 30
 MODEL = "gpt-4.1-mini"
+VECTOR_STORE_ID = "vs_69afe8e41b688191a1d03de3d96875ee"
 
 
 assistant_agent = Agent[AgentContext[dict[str, Any]]](
     model=MODEL,
     name="Starter Assistant",
     instructions=(
-        "You are a concise, helpful assistant. "
-        "Keep replies short and focus on directly answering "
-        "the user's request."
+        "You are a helpful assistant with access to a knowledge base. "
+        "Always search the knowledge base first before answering questions. "
+        "If the knowledge base has relevant information, use it to answer accurately. "
+        "Keep replies concise and focused on the user's request."
     ),
+    tools=[
+        FileSearchTool(
+            vector_store_ids=[VECTOR_STORE_ID],
+            max_num_results=5,
+        )
+    ],
 )
 
 
